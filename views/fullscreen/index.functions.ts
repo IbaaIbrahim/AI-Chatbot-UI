@@ -89,8 +89,10 @@ export const sendMessage = async ({
     console.log("Starting stream to API:", `${apiBase}/chat/stream`)
     console.log("Sending prompt:", prompt)
 
-    const sendDataResponse = await _sendMessage(prompt, conversationIdRef.current)
-    const response = await _connectWithStreaming(sendDataResponse.job_id, controller.signal)
+    const createJobResponse = await _sendMessage(prompt, conversationIdRef.current)
+    const createJobData = createJobResponse?.data
+    console.log('----------------------', createJobResponse);
+    const response = await _connectWithStreaming(createJobData.job_id, controller.signal)
 
     if (!response.ok || !response.body || typeof response.body.getReader !== "function") {
       throw new Error("Network error")

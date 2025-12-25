@@ -74,7 +74,7 @@ export const _connectWithStreaming = async (job_id: string, signal: AbortSignal,
 
 export const _sendMessage = async (message: string, conversation_id: string) => {
   const API = getAPI()
-  const response: { job_id: string } = await API.post(`/v1/jobs`, {
+  const response: {data: { job_id: string, status: string }} = await API.post(`/v1/jobs`, {
     user_message: message,
     conversation_id
   },
