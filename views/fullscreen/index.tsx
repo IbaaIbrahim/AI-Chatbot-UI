@@ -3,6 +3,8 @@ import React, { useState, useRef, useEffect } from "react"
 import { sendMessage, stopStreaming } from "./index.functions"
 import ReactMarkdown from "react-markdown"
 import { openChecklistPreview } from "../../utilities/external-tools"
+import { v4 as uuidv4 } from "uuid";
+
 // External types - users should provide their own types for tool handlers
 // import { TemplateHistoryItemStore, TemplateVM } from "@csrc/modules/checklist/assets/data/types"
 
@@ -95,7 +97,7 @@ export const FullScreenChat: React.FC = () => {
   const lastCharTimeRef = useRef<number>(0)
 
   // Unique ID for the current conversation session
-  const conversationIdRef = useRef<string>(crypto.randomUUID())
+  const conversationIdRef = useRef<string>(uuidv4())
 
   // Reference to the textarea element for auto-resizing
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -637,7 +639,7 @@ export const FullScreenChat: React.FC = () => {
               setStreamingComplete(false)
               setAnimatingMessageId(null)
               setUserScrolledUp(false)
-              conversationIdRef.current = crypto.randomUUID()
+              conversationIdRef.current = uuidv4()
             }} title="Start new chat">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14M5 12h14" />

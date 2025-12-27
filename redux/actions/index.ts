@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid"
 import { getAPI } from "../../utilities/API"
 
 const buildChatStreamUrl = (job_id: string) => {
@@ -80,7 +81,7 @@ export const _sendMessage = async (message: string, conversation_id: string) => 
   },
     {
       headers: {
-        "Idempotency-Key": crypto.randomUUID()
+        "Idempotency-Key": uuidv4()
       }
     })
   return response

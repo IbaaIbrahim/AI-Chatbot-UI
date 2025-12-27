@@ -1,4 +1,6 @@
 import React from "react"
+import { v4 as uuidv4 } from "uuid"
+
 import { ChatMessage } from "."
 import { _connectWithStreaming, _sendMessage } from "../../redux/actions"
 import { getAPI } from "../../utilities/API"
@@ -52,12 +54,12 @@ export const sendMessage = async ({
 
   // 2. Prepare Messages
   const userMessage: ChatMessage = {
-    id: crypto.randomUUID(),
+    id: uuidv4(),
     role: "user",
     content: prompt
   }
 
-  const assistantMessageId = crypto.randomUUID()
+  const assistantMessageId = uuidv4()
   const assistantMessage: ChatMessage = {
     id: assistantMessageId,
     role: "assistant", // "assistant" role triggers the markdown rendering in UI
@@ -201,7 +203,7 @@ export const sendMessage = async ({
       } else if (eventType === "tool.requested") {
         // Backend format: payload = {"name": "...", "arguments": {...}, "call_id": "..."}
         const toolName = payload.name || "tool"
-        const callId = payload.call_id || crypto.randomUUID()
+        const callId = payload.call_id || uuidv4()
         const statusMsg = `Using ${toolName}...`
 
         // Track this tool call
