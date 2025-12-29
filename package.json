@@ -1,5 +1,5 @@
 {
-  "name": "@flowdit/chatbot-library",
+  "name": "flowdit-chatbot-library",
   "version": "1.0.0",
   "description": "A React chatbot library with streaming support, tool integration, and modern UI",
   "main": "dist/index.js",
