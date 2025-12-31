@@ -109,7 +109,7 @@ export const sendMessage = async ({
     let doneReading = false
     let lastEventId: number | null = null // Track Last-Event-ID for reconnection support
     let jobFinished = false // Flag to break out of reading loop when job completes/fails
-    
+
     // Helper to close the connection
     const closeConnection = async () => {
       try {
@@ -135,7 +135,7 @@ export const sendMessage = async ({
         }
       }
     }
-    
+
     // Track tool calls during streaming
     const toolCallsMap = new Map<string, { tool: string; call_id: string; status: string; data?: any }>()
 
@@ -224,9 +224,9 @@ export const sendMessage = async ({
                 status: tc.status,
                 data: tc.data
               }))
-            
-            return { 
-              ...m, 
+
+            return {
+              ...m,
               status: statusMsg,
               pendingToolCalls: pendingToolCalls.length > 0 ? pendingToolCalls : undefined
             }
@@ -238,7 +238,7 @@ export const sendMessage = async ({
         const callId = payload.call_id
         const toolResult = payload.result || {}
         const toolName = payload.tool_name || null
-        
+
         if (callId && toolCallsMap.has(callId)) {
           // Update existing tool call with result
           const toolCall = toolCallsMap.get(callId)!
@@ -261,7 +261,7 @@ export const sendMessage = async ({
               finalToolName = "translate_text"
             }
           }
-          
+
           toolCallsMap.set(callId, {
             tool: finalToolName,
             call_id: callId,
@@ -280,7 +280,7 @@ export const sendMessage = async ({
                 status: tc.status,
                 data: tc.data
               }))
-            
+
             const completedToolCalls = Array.from(toolCallsMap.values())
               .filter(tc => tc.data) // Only completed (has data)
               .map(tc => ({
@@ -303,8 +303,8 @@ export const sendMessage = async ({
 
             // Don't set animationComplete here - it should only be set when animation actually finishes
             // The useEffect watching animatingMessageId will set it when animation completes
-            return { 
-              ...m, 
+            return {
+              ...m,
               status: pendingToolCalls.length > 0 ? `Using ${pendingToolCalls[0].tool}...` : undefined,
               pendingToolCalls: pendingToolCalls.length > 0 ? pendingToolCalls : undefined,
               toolCalls: completedToolCalls.length > 0 ? completedToolCalls : (m.toolCalls || undefined) // Preserve existing toolCalls if no new ones
@@ -337,7 +337,7 @@ export const sendMessage = async ({
         // Mark job as finished - will break out of reading loop
         jobFinished = true
         jobFinishedRef.current = true
-        
+
         // Mark message as no longer streaming
         // Move all pending tool calls to completed tool calls
         // Set animationComplete if we have tool calls and message is not currently animating
@@ -350,7 +350,7 @@ export const sendMessage = async ({
                 status: tc.status,
                 data: tc.data
               }))
-            
+
             console.log("✅ job.completed - updating message with toolCalls:", {
               allToolCallsCount: allToolCalls.length,
               allToolCalls,
@@ -360,13 +360,13 @@ export const sendMessage = async ({
               currentAnimationComplete: m.animationComplete,
               animatingMessageId
             })
-            
+
             // Don't set animationComplete here - it should only be set when animation actually finishes
             // The useEffect watching animatingMessageId will set it when animation completes
             const finalToolCalls = allToolCalls.length > 0 ? allToolCalls : (m.toolCalls || undefined)
-            
-            return { 
-              ...m, 
+
+            return {
+              ...m,
               isStreaming: false,
               status: undefined, // Clear any status
               toolCalls: finalToolCalls,
@@ -384,11 +384,11 @@ export const sendMessage = async ({
         // Mark job as finished - will break out of reading loop
         jobFinished = true
         jobFinishedRef.current = true
-        
+
         const errorMsg = payload.error?.message || "Job failed"
         setMessages(prev => prev.map(m => {
           if (m.id === assistantMessageId) {
-            return { ...m, content: completeText || errorMsg, isStreaming: false }
+            return { ...m, content: completeText || errorMsg, isStreaming: false, hasError: true }
           }
           return m
         }))
@@ -489,7 +489,7 @@ export const sendMessage = async ({
         parseSSE(buffer)
         buffer = ""
       }
-      
+
       // Break out of loop if job finished (job.completed or job.failed received)
       if (jobFinished) {
         console.log("🛑 Job finished, closing SSE connection")
@@ -507,6 +507,13 @@ export const sendMessage = async ({
       console.log("Stream aborted by user")
     } else {
       console.error("Streaming error:", err)
+      // If not aborted, mark assistant message as error
+      setMessages(prev => prev.map(m => {
+        if (m.id === assistantMessageId) {
+          return { ...m, isStreaming: false, hasError: true }
+        }
+        return m
+      }))
     }
   } finally {
     // 7. Cleanup
@@ -515,7 +522,7 @@ export const sendMessage = async ({
       charBufferRef.current = latestBuffer
       setIsStreaming(false)
       setStreamingComplete(true) // Signals animation loop to finish up
-      
+
       // Don't set animationComplete here - it should only be set when animation actually finishes
       // The useEffect watching animatingMessageId will set it when animation completes
     }

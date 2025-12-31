@@ -29,220 +29,57 @@ This will:
 
 ### 3. Testing the Library Locally
 
-To test the library in another project during development, follow these steps:
+The project is structured as a monorepo, which makes local testing seamless.
 
-#### Option A: Using npm/yarn link (Recommended for Development)
+#### Option A: Using the built-in Demo App (Recommended for UI work)
 
-**Choose npm or yarn based on what your test project uses:**
+The `apps/demo` project is pre-configured to work with the library.
 
-##### Using npm link:
+1.  **Immediate Updates (HMR)**:
+    The demo is configured to alias `flowdit-chatbot-library` directly to its source files. Changes you make in the `packages/chatbot-library` folder will reflect **instantly** in the demo without a build step.
+    
+    ```bash
+    # Run from the root
+    npm run dev:demo
+    ```
 
-1. **First, build the library once** (to create the `dist` folder):
-   ```bash
-   npm run build
-   ```
+2.  **Using Built Package (Production-like)**:
+    If you want to test how the library behaves when compiled (e.g., checking `dist` output), you'll need to run the library's watcher:
+    
+    ```bash
+    # Terminal 1: Watch the library (rebuilds dist on change)
+    npm run watch -w flowdit-chatbot-library
+    
+    # Terminal 2: Run the demo
+    npm run dev:demo
+    ```
+    *Note: You may need to update `apps/demo/vite.config.ts` to point to `../../packages/chatbot-library` (root) instead of `index.ts` if you want to strictly use the `dist` folder.*
 
-2. **In the library directory** (this project), create a global symlink:
-   ```bash
-   npm link
-   ```
-   This creates a global symlink to your library package.
+#### Option B: Testing in External Projects (npm/yarn link)
 
-3. **In your test/example project** (the project where you want to use the library):
-   ```bash
-   npm link @flowdit/chatbot-library
-   ```
-   This links your test project to the global symlink.
+To test the library in a completely separate project:
 
-4. **Start development mode** in the library (keep this running):
-   ```bash
-   npm run dev
-   ```
-   This will watch for changes and automatically rebuild TypeScript and SCSS files.
+1.  **Build the library**:
+    ```bash
+    npm run build -w flowdit-chatbot-library
+    ```
 
-5. **In your test project**, import and use the library:
-   ```tsx
-   // Import the library
-   import { FullScreenChat, ChatbotProvider, initializeAPI } from '@flowdit/chatbot-library'
-   import '@flowdit/chatbot-library/dist/styles.css'
-   
-   // Initialize API (if needed)
-   initializeAPI({
-     baseURL: 'https://your-api-url.com',
-     token: 'your-token'
-   })
-   
-   // Use in your component
-   function App() {
-     return (
-       <ChatbotProvider>
-         <FullScreenChat />
-       </ChatbotProvider>
-     )
-   }
-   ```
+2.  **Link the library**:
+    ```bash
+    # In packages/chatbot-library
+    npm link
+    
+    # In your external project
+    npm link flowdit-chatbot-library
+    ```
 
-6. **Start your test project's dev server** (e.g., `npm start`, `npm run dev`, etc.)
+3.  **Import in your project**:
+    ```tsx
+    import { FullScreenChat, ChatbotProvider } from 'flowdit-chatbot-library'
+    import 'flowdit-chatbot-library/dist/styles.css'
+    ```
 
-7. **Making changes**: 
-   - Edit files in the library
-   - The `npm run dev` watcher will automatically rebuild
-   - **Restart your test project's dev server** to pick up the changes (some bundlers like Vite/Webpack may hot-reload, but TypeScript changes often require a restart)
-
-**To unlink when done (npm):**
-```bash
-# In your test project
-npm unlink @flowdit/chatbot-library
-
-# In the library directory
-npm unlink
-```
-
-##### Using yarn link:
-
-1. **First, build the library once** (to create the `dist` folder):
-   ```bash
-   npm run build
-   # or
-   yarn build
-   ```
-
-2. **In the library directory** (this project), create a global symlink:
-   ```bash
-   yarn link
-   ```
-   This creates a global symlink to your library package.
-
-3. **In your test/example project** (the project where you want to use the library):
-   ```bash
-   yarn link @flowdit/chatbot-library
-   ```
-   This links your test project to the global symlink.
-
-4. **Start development mode** in the library (keep this running):
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-   This will watch for changes and automatically rebuild TypeScript and SCSS files.
-
-5. **In your test project**, import and use the library (same as npm example above)
-
-6. **Start your test project's dev server** (e.g., `yarn start`, `yarn dev`, etc.)
-
-7. **Making changes**: 
-   - Edit files in the library
-   - The `npm run dev` watcher will automatically rebuild
-   - **Restart your test project's dev server** to pick up the changes
-
-**To unlink when done (yarn):**
-```bash
-# In your test project
-yarn unlink @flowdit/chatbot-library
-
-# In the library directory
-yarn unlink
-```
-
-**Note**: If your test project uses yarn but the library uses npm (or vice versa), you can mix them. For example, you can use `npm link` in the library and `yarn link` in the test project, or vice versa. Both package managers use the same global link directory.
-
-#### Option B: Using file path in package.json (Alternative)
-
-This approach uses a direct file path instead of symlinks:
-
-1. **In your test project's `package.json`**, add:
-   ```json
-   {
-     "dependencies": {
-       "@flowdit/chatbot-library": "file:../path/to/Chatbot-library"
-     }
-   }
-   ```
-   Replace `../path/to/Chatbot-library` with the relative path from your test project to the library.
-
-2. **Install dependencies** in your test project:
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Start development mode** in the library:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-4. **Use the library** in your test project as shown in Option A.
-
-**Note**: With this approach, you may need to reinstall (`npm install` or `yarn install`) in your test project when you make significant changes to the library's package.json.
-
-### 4. Build for Production
-
-When you're ready to build the final version:
-
-```bash
-npm run build
-```
-
-This creates optimized production builds in the `dist/` folder.
-
-### 5. Clean Build Artifacts
-
-To remove the `dist/` folder:
-
-```bash
-npm run clean
-```
-
-## Development Workflow
-
-1. Start development mode: `npm run dev`
-2. Make changes to your TypeScript/SCSS files
-3. Files automatically rebuild
-4. Test in your linked project
-5. When ready, build: `npm run build`
-6. Publish: `npm publish`
-
-## Quick Reference: Testing in Real Project
-
-**TL;DR - Fastest way to test with npm:**
-
-```bash
-# Terminal 1: In library directory
-cd /path/to/Chatbot-library
-npm run build    # Build once first
-npm link          # Create global symlink
-npm run dev       # Start watching for changes
-
-# Terminal 2: In your test project
-cd /path/to/your-test-project
-npm link @flowdit/chatbot-library  # Link to library
-npm start  # Start your dev server
-```
-
-**Or with yarn:**
-
-```bash
-# Terminal 1: In library directory
-cd /path/to/Chatbot-library
-yarn build       # Build once first
-yarn link         # Create global symlink
-yarn dev          # Start watching for changes
-
-# Terminal 2: In your test project
-cd /path/to/your-test-project
-yarn link @flowdit/chatbot-library  # Link to library
-yarn start  # Start your dev server
-```
-
-Then import in your test project:
-```tsx
-import { FullScreenChat, ChatbotProvider } from '@flowdit/chatbot-library'
-import '@flowdit/chatbot-library/dist/styles.css'
-```
+---
 
 ## Troubleshooting
 
