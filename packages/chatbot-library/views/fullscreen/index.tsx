@@ -70,7 +70,7 @@ export const FullScreenChat: React.FC = () => {
 
   // Sync messages with active session
   const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0]
-  const messages = activeSession.messages
+  const messages = activeSession?.messages || []
 
   const setMessages = (updateFn: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => {
     setSessions(prev => prev.map(s => {
@@ -130,8 +130,8 @@ export const FullScreenChat: React.FC = () => {
   // Timestamp of the last character added for animation timing control
   const lastCharTimeRef = useRef<number>(0)
 
-  // Unique ID for the current conversation session
-  const conversationIdRef = useRef<string>(uuidv4())
+  // Unique ID for the current conversation session (synced with activeSessionId)
+  const conversationIdRef = useRef<string>(activeSessionId)
 
   // Reference to the textarea element for auto-resizing
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -154,6 +154,14 @@ export const FullScreenChat: React.FC = () => {
   // =========================================
   // Effects
   // =========================================
+
+  /**
+   * Effect: Sync conversationIdRef with activeSessionId.
+   */
+  useEffect(() => {
+    conversationIdRef.current = activeSessionId
+    console.log("Active session changed, synced conversationIdRef:", activeSessionId)
+  }, [activeSessionId])
 
   /**
    * Effect: Handle clicks outside of dropdowns to close them.
@@ -506,14 +514,15 @@ export const FullScreenChat: React.FC = () => {
     setStreamingComplete(false)
     setAnimatingMessageId(null)
     setUserScrolledUp(false)
-    conversationIdRef.current = uuidv4()
+    conversationIdRef.current = newId
   }
 
   const deleteSession = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
     if (sessions.length === 1) {
-      setSessions([{ id: uuidv4(), title: 'New Chat', messages: [], createdAt: Date.now() }])
-      setActiveSessionId(sessions[0].id)
+      const newId = uuidv4()
+      setSessions([{ id: newId, title: 'New Chat', messages: [], createdAt: Date.now() }])
+      setActiveSessionId(newId)
     } else {
       const newSessions = sessions.filter(s => s.id !== id)
       setSessions(newSessions)
