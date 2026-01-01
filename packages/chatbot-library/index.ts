@@ -3,14 +3,16 @@
 // Components
 export { FullScreenChat } from './views/fullscreen'
 export { default as ChatbotToolsWrapper } from './views/tools'
+export { ConversationHistory } from './views/ConversationHistory'
+export type { Conversation } from './views/ConversationHistory'
 
 // Redux Provider (wraps components with internal store)
 export { ChatbotProvider } from './redux/Provider'
 
 // Redux Hooks (for accessing internal store)
-export { 
-  useChatbotDispatch, 
-  useChatbotSelector, 
+export {
+  useChatbotDispatch,
+  useChatbotSelector,
   useChatbotState
 } from './redux/hooks'
 

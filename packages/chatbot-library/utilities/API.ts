@@ -7,6 +7,7 @@ export interface ChatbotAPIConfig {
   timeout?: number
   headers?: Record<string, string>
   withCredentials?: boolean
+  embedMode?: 'with_history' | 'without_history'  // Feature 1: Embedding mode
 }
 
 // Helper function to get environment variables (works with Vite, React, Next.js)
@@ -42,15 +43,15 @@ let API: AxiosInstance | undefined
  * This should be called before using the chatbot components
  */
 export const initializeAPI = (config: ChatbotAPIConfig = {}) => {
-  const baseURL = config.baseURL || 
+  const baseURL = config.baseURL ||
     getEnvVar('VITE_CHAT_AI_ASSISTANT_API_URL') ||
-    getEnvVar('REACT_APP_CHAT_AI_ASSISTANT_API_URL') || 
-    getEnvVar('NEXT_PUBLIC_CHAT_AI_ASSISTANT_API_URL') || 
+    getEnvVar('REACT_APP_CHAT_AI_ASSISTANT_API_URL') ||
+    getEnvVar('NEXT_PUBLIC_CHAT_AI_ASSISTANT_API_URL') ||
     ""
 
-  const token = config.token || 
+  const token = config.token ||
     getEnvVar('VITE_CHAT_AI_TOKEN') ||
-    getEnvVar('REACT_APP_CHAT_AI_TOKEN') || 
+    getEnvVar('REACT_APP_CHAT_AI_TOKEN') ||
     ""
 
   const baseConfig: AxiosRequestConfig = {
